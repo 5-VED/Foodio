@@ -1,0 +1,11 @@
+import { Client } from 'pg';
+
+const dbConfig = {
+  user: 'postgres',
+  host: 'localhost',
+  password: 'PostgressPwd',
+  database: 'Foodio',
+  port: parseInt(process.env.DATABASE_PORT || '5432'),
+};
+
+export const client = new Client(dbConfig);
