@@ -1,6 +1,6 @@
 import { Pool } from 'pg';
 import { logger } from '../../../config/Logger';
-let dbConn
+let dbConn;
 
 import {
   DATABASE_USER,
