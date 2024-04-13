@@ -1,6 +1,5 @@
 import { Pool } from 'pg';
 import { logger } from '../../../config/Logger';
-let dbConn;
 
 import {
   DATABASE_USER,
@@ -21,10 +20,11 @@ const dbConfig = {
   connectionTimeoutMillis: 2000, // How long to wait for a connection to be established
 };
 
+let dbConn: Pool = new Pool(dbConfig);
+// let dbConn;
 export const handleDisconnections = async () => {
-  dbConn = new Pool(dbConfig);
 
-  dbConn.connect((error, client: any) => {
+  dbConn.connect((error: any, client: any) => {
     if (error) {
       logger.error('Error Connecting to DataBase', error);
     } else {
