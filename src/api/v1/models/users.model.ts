@@ -1,7 +1,8 @@
+import { Request } from 'express';
 import dbConn from '../db/index';
 import { logger } from '../../../config/Logger';
 import { IUser } from '../interfaces/user.interface';
-import { Request } from 'express';
+import { executeQuery } from '../db/index';
 
 class User implements IUser {
   firstName: string;
@@ -36,19 +37,18 @@ class User implements IUser {
       newUser.photo,
     ];
     let infoMsg = 'User Inserted with id:';
-    console.log("params=============>",params);
-    // dbConn.query(query, params, errorMsg, infoMsg, result);
-    dbConn.query(query, function (error: Error, result: any) {
-      if (error) {
-        logger.error('Error in creating new User');
-        result(null, error);
-      } else {
-        logger.info('User created successfully');
-        console.log("result==============>",result)
-        result(null, result);
-      }
-    });
+    executeQuery(query, params, errorMsg, infoMsg, result);
   }
+
+  static MatchMail(email: String, result: any) {
+    let query = 'SELECT * FROM users WHERE email = ' + email;
+    let params = null;
+    let errorMsg = 'Error in Inserting new User';
+    let infoMsg = 'User Inserted with id:';
+    executeQuery(query, params, errorMsg, infoMsg, result);
+  }
+
+  
 }
 
 export default User;
