@@ -8,7 +8,7 @@ class User implements IUser {
   contactNo: string;
   email: string;
   password: string;
-  role: string;
+  role_id: number;
   photo: string;
 
   constructor(req: Request) {
@@ -17,21 +17,22 @@ class User implements IUser {
     this.contactNo = req.body.contactNo;
     this.email = req.body.email;
     this.password = req.body.password;
-    this.role = req.body.role;
+    this.role_id = req.body.role_id;
     this.photo = req.body.photo;
   }
 
   static create(newUser: User, result: any) {
     let query =
-      'INSERT INTO users (firstName,lastName,contactNo,email,password,role,photo) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id';
+      'INSERT INTO users (firstName,lastName,contactNo,email,password,role_id,photo) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *';
     let errorMsg: string = 'Error in Inserting new User';
-    let params: string[] = [
+
+    let params: [string, string, string, string, string, number, string] = [
       newUser.firstName,
       newUser.lastName,
       newUser.contactNo,
       newUser.email,
-      newUser.password,
-      newUser.role,
+      newUser.password, 
+      newUser.role_id,
       newUser.photo,
     ];
     let infoMsg = 'User Inserted with id:';
@@ -45,7 +46,6 @@ class User implements IUser {
     let infoMsg = 'User Inserted with id:';
     executeQuery(query, params, errorMsg, infoMsg, result);
   }
-  
 }
 
 export default User;
