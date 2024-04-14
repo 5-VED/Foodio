@@ -34,9 +34,17 @@ export const handleDisconnections = async () => {
   });
 };
 
+/**
+ * @description Utility Function to execute query in functions
+ * @param queryStr
+ * @param params
+ * @param errorMsg
+ * @param infoMsg
+ * @param callback
+ */
 export const executeQuery = async (
   queryStr: string,
-  params: string[] | null,
+  params: any[] | null,
   errorMsg: string,
   infoMsg: string,
   callback: any
