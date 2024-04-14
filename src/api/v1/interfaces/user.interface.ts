@@ -4,6 +4,6 @@ export interface IUser {
   contactNo: string;
   email: string;
   password: string;
-  role: string;
+  role_id: number;
   photo: string;
 }
