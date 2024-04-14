@@ -18,7 +18,6 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(helmet());
 
-
 app.use('/api/v1/users',routes.userRoutes)
 
 export { app };
