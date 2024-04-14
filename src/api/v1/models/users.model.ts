@@ -1,6 +1,4 @@
 import { Request } from 'express';
-import dbConn from '../db/index';
-import { logger } from '../../../config/Logger';
 import { IUser } from '../interfaces/user.interface';
 import { executeQuery } from '../db/index';
 
@@ -40,14 +38,13 @@ class User implements IUser {
     executeQuery(query, params, errorMsg, infoMsg, result);
   }
 
-  static MatchMail(email: String, result: any) {
+  static MatchMail(email: string, result: any) {
     let query = 'SELECT * FROM users WHERE email = ' + email;
     let params = null;
     let errorMsg = 'Error in Inserting new User';
     let infoMsg = 'User Inserted with id:';
     executeQuery(query, params, errorMsg, infoMsg, result);
   }
-
   
 }
 
