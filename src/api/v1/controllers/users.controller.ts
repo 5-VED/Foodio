@@ -21,9 +21,10 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
       );
   }
 
+
   await User.MatchMail(
     req.body.email,
-    async (error: any, response: string | any[]) => {
+    async (error: Error, response: string | any[]) => {      
       if (response && response.length > 0) {
         return res
           .status(HTTP_CODES.OK)

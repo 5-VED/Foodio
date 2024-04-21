@@ -53,6 +53,7 @@ export const executeQuery = async (
     if (params) {
       await client?.query(queryStr, params, (error, result: any) => {
         if (error) {
+          console.log(error);
           logger.error(errorMsg + ': ' + error);
           callback(error, null);
         } else {
@@ -61,6 +62,7 @@ export const executeQuery = async (
             callback(null, result.rowCount);
           } else {
             logger.info(infoMsg);
+            console.log(infoMsg);
             callback(null, result);
           }
         }
