@@ -2,7 +2,6 @@ import { Request } from 'express';
 import { IUser } from '../interfaces/user.interface';
 import { executeQuery } from '../db/index';
 import { hash } from 'bcrypt';
-import { logger } from '../../../config/Logger';
 import { ApiError } from '../../../utils/ApiError';
 import { HTTP_CODES } from '../../../config/HttpStatusCodes';
 
@@ -25,7 +24,8 @@ class User implements IUser {
     this.photo = req.body.photo;
   }
 
-   async hashPassword(password: string): Promise<string> {
+  //------------ Function to Hash Password----------------//
+  async hashPassword(password: string): Promise<string> {
     try {
       let hashedPassword = await hash(password, 10);
       return hashedPassword.toString();
@@ -59,13 +59,23 @@ class User implements IUser {
     executeQuery(query, params, errorMsg, infoMsg, result);
   }
 
-  static MatchMail(email: string, result: any) {
-    let query = 'SELECT * FROM users WHERE email = ' + email;
-    let params = null;
+  static MatchMail(email: string, resultCallback: any) {
+    let query = 'SELECT * FROM users WHERE email = $1 ';
+    let params: [String] = [email];
     let errorMsg = 'Error in Inserting new User';
     let infoMsg = 'User Inserted with id:';
-    executeQuery(query, params, errorMsg, infoMsg, result);
+    executeQuery(query, params, errorMsg, infoMsg, resultCallback);
   }
+
+  static GetUser(email: string, resultCallback: any) {
+    let query = 'SELECT * FROM users WHERE email = $1 ';
+    let params: [String] = [email];
+    let errorMsg = 'Error in Inserting new User';
+    let infoMsg = 'User Inserted with id:';
+    executeQuery(query, params, errorMsg, infoMsg, resultCallback);
+  }
+
+
 }
 
 export default User;

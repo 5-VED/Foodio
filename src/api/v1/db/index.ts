@@ -1,4 +1,4 @@
-import { Pool } from 'pg';
+import { Client, Pool, PoolClient } from 'pg';
 import { logger } from '../../../config/Logger';
 
 import {
@@ -8,6 +8,7 @@ import {
   DATABASE,
   DATABASE_PORT,
 } from '../../../config/EnvironmentVariables';
+import { error } from 'console';
 
 const dbConfig = {
   user: DATABASE_USER,
@@ -47,47 +48,63 @@ export const executeQuery = async (
   params: any[] | null,
   errorMsg: string,
   infoMsg: string,
-  callback: any
+  callback: (error: Error | null, result: any) => void
 ) => {
-  dbConn.connect(async (error, client) => {
-    if (params) {
-      await client?.query(queryStr, params, (error, result: any) => {
-        if (error) {
-          console.log(error);
-          logger.error(errorMsg + ': ' + error);
-          callback(error, null);
+  try {
+    dbConn.connect(
+      async (
+        err: Error | undefined,
+        client: PoolClient | undefined,
+        done: (release?: any) => void
+      ) => {
+        if (params) {
+          await client?.query(
+            queryStr,
+            params,
+            (error: Error, response: any) => {
+              if (error) {
+                logger.error(errorMsg + ': ' + error);
+                callback(error, null);
+              } else {
+                if (response.rowCount > 0) {
+                  logger.info(infoMsg + ' ' + response.rowCount);
+                  callback(null, response.rows);
+                } else {
+                  logger.info(infoMsg);
+                  callback(null, response);
+                }
+              }
+              client.release();
+              // logger.info(`Connection released ${}`)
+            }
+          );
+        } else if (client) {
+          await client.query(queryStr, (error, response) => {
+            if (error) {
+              logger.error(errorMsg + ': ' + error);
+              callback(error, null);
+            } else {
+              if (
+                response &&
+                response.rowCount !== null &&
+                response.rowCount > 0
+              ) {
+                logger.info(infoMsg + ' ' + response.rowCount);
+                callback(null, response.rowCount);
+              } else {
+                logger.info(infoMsg);
+                callback(null, response);
+              }
+            }
+            client.release();
+          });
         } else {
-          if (result.rowCount > 0) {
-            logger.info(infoMsg + ' ' + result.insertId);
-            callback(null, result.rowCount);
-          } else {
-            logger.info(infoMsg);
-            console.log(infoMsg);
-            callback(null, result);
-          }
+          console.log('No Connection found');
         }
-        client.release();
-      });
-    } else if (client) {
-      await client.query(queryStr, (error, result: any) => {
-        if (error) {
-          logger.error(errorMsg + ': ' + error);
-          callback(error, null);
-        } else {
-          if (result.rowCount > 0) {
-            logger.info(infoMsg + ' ' + result.rowCount);
-            callback(null, result.rowCount);
-          } else {
-            logger.info(infoMsg);
-            callback(null, result);
-          }
-          client.release();
-        }
-      });
-    } else {
-      logger.info('No Connection found');
-    }
-  });
+      }
+    );
+  } catch (error) {
+    throw Error();
+  }
 };
-
 export default dbConn;

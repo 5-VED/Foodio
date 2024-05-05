@@ -4,9 +4,11 @@ import { logger } from '../../../config/Logger';
 import { asyncHandler } from '../../../utils/AsyncHandaler';
 import { ApiResponse } from '../../../utils/ApiResponse';
 import User from '../models/users.model';
+import jwt from "jsonwebtoken";
+
 
 export const create = asyncHandler(async (req: Request, res: Response) => {
-  const new_user: User = new User(req);
+  const newUser: User = new User(req);
 
   if (req.body.constructor === Object && Object.keys(req.body).length === 0) {
     logger.error('Please fill all the details');
@@ -16,41 +18,65 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
         new ApiResponse(
           HTTP_CODES.BAD_REQUEST,
           null,
-          'Please fill all the details'
+          'Please fill all the details',
+          false
         )
       );
   }
 
-
-  await User.MatchMail(
-    req.body.email,
-    async (error: Error, response: string | any[]) => {      
-      if (response && response.length > 0) {
-        return res
-          .status(HTTP_CODES.OK)
-          .json(
-            new ApiResponse(
-              HTTP_CODES.OK,
-              response,
-              'Email is already registered; Please try another one'
-            )
-          );
-      } else {
-        User.create(new_user, async (error: Error, user: any) => {
-          if (user) {
-            logger.info('User data added successfully!');
-            return res
-              .status(HTTP_CODES.OK)
-              .json(
-                new ApiResponse(
-                  HTTP_CODES.OK,
-                  user,
-                  'User data added successfully!'
-                )
-              );
-          }
-        });
-      }
+  User.MatchMail(newUser.email, async (error: Error, existingUser: User) => {
+    if (error) {
+      return res.status(HTTP_CODES.INTERNAL_SERVER_ERROR).json(
+        new ApiResponse(HTTP_CODES.INTERNAL_SERVER_ERROR, error, "Internal Server Error", false)
+      )
     }
-  );
+
+    if (existingUser) {
+      return res.status(HTTP_CODES.CONFLICT).json(
+        new ApiResponse(HTTP_CODES.CONFLICT, existingUser, "User with this email already exist. Please take other email.", false)
+      );
+    }
+
+    User.create(newUser, async (error: Error, userId: User) => {
+      if (error) {
+        return res.status(HTTP_CODES.INTERNAL_SERVER_ERROR).json(
+          new ApiResponse(HTTP_CODES.INTERNAL_SERVER_ERROR, error, "Internal Server Error", false)
+        )
+      }
+
+      return res.status(HTTP_CODES.CREATED).json(
+        new ApiResponse(HTTP_CODES.CREATED, userId, 'User created successfully', true)
+      )
+    });
+  });
 });
+
+
+
+export const login = asyncHandler(async (req: Request, res: Response) => {
+
+  User.GetUser(req.body.email, async (error: Error, user: any) => {
+
+    if (error) {
+      return res.status(HTTP_CODES.INTERNAL_SERVER_ERROR).json(
+        new ApiResponse(HTTP_CODES.INTERNAL_SERVER_ERROR, error, "Internal Server Error", false)
+      )
+    }
+
+    if (!user) {
+      return res.status(HTTP_CODES.BAD_REQUEST).json(
+        new ApiResponse(HTTP_CODES.BAD_REQUEST, user.rows, "User with this email does not exist.", false)
+      )
+    }
+
+    if (user && user.length === 1) {
+      return res.status(HTTP_CODES.CREATED).json(
+        new ApiResponse(HTTP_CODES.CREATED, user, "User fetched successfully.", true)
+      )
+    }
+
+  })
+
+
+
+})
