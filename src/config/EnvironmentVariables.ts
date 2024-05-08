@@ -13,4 +13,5 @@ export const {
   DATABASE_HOST,
   DATABASE_PASSWORD,
   DATABASE,
+  JWT_SECRET
 } = process.env;

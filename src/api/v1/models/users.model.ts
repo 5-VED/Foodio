@@ -61,15 +61,15 @@ class User implements IUser {
 
   static MatchMail(email: string, resultCallback: any) {
     let query = 'SELECT * FROM users WHERE email = $1 ';
-    let params: [String] = [email];
+    let params: [string] = [email];
     let errorMsg = 'Error in Inserting new User';
     let infoMsg = 'User Inserted with id:';
     executeQuery(query, params, errorMsg, infoMsg, resultCallback);
   }
 
   static GetUser(email: string, resultCallback: any) {
-    let query = 'SELECT * FROM users WHERE email = $1 ';
-    let params: [String] = [email];
+    let query = 'SELECT * FROM users WHERE email = $1';
+    let params: [string] = [email];
     let errorMsg = 'Error in Inserting new User';
     let infoMsg = 'User Inserted with id:';
     executeQuery(query, params, errorMsg, infoMsg, resultCallback);

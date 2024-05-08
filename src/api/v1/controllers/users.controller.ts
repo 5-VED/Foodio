@@ -4,7 +4,9 @@ import { logger } from '../../../config/Logger';
 import { asyncHandler } from '../../../utils/AsyncHandaler';
 import { ApiResponse } from '../../../utils/ApiResponse';
 import User from '../models/users.model';
-import jwt from "jsonwebtoken";
+import { sign } from "jsonwebtoken";
+import { JWT_SECRET } from '../../../config/EnvironmentVariables';
+import { compare } from 'bcrypt';
 
 
 export const create = asyncHandler(async (req: Request, res: Response) => {
@@ -52,10 +54,11 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
 });
 
 
-
 export const login = asyncHandler(async (req: Request, res: Response) => {
 
-  User.GetUser(req.body.email, async (error: Error, user: any) => {
+  let { email, password } = req.body
+
+  User.GetUser(email, async (error: Error, user: any) => {
 
     if (error) {
       return res.status(HTTP_CODES.INTERNAL_SERVER_ERROR).json(
@@ -70,13 +73,19 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
     }
 
     if (user && user.length === 1) {
+      const isPasswordValid: boolean = await compare(password, user[0].password)
+      if (!isPasswordValid) {
+        return res.status(HTTP_CODES.UNAUTHORIZED).json(
+          new ApiResponse(HTTP_CODES.UNAUTHORIZED, null, "Please Enter valid password", false)
+        )
+      }
+
+      let jwtPayload: object = { id: user[0].id, email: user[0].email }
+      let token = sign(jwtPayload, JWT_SECRET!, { expiresIn: 60 * 60 })
+
       return res.status(HTTP_CODES.CREATED).json(
-        new ApiResponse(HTTP_CODES.CREATED, user, "User fetched successfully.", true)
+        new ApiResponse(HTTP_CODES.CREATED, { ...user[0], token }, "User log in  successfully.", true)
       )
     }
-
   })
-
-
-
 })
